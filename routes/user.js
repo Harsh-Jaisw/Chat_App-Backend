@@ -72,27 +72,28 @@ router.post("/register", async (req, res) => {
   }
 });
 router.post("/login", async (req, res) => {
-  const userByEmail = await User.findOne({ email: req.body.email });
-  const userByPhone = await User.findOne({
-    mobileNumber: req.body.mobileNumber,
-  });
-  if (!userByEmail && !userByPhone) {
-    return res.status(400).send("Invalid Email or Mobile Number");
-  }
-  if (
-    userByEmail &&
-    bcrypt.compareSync(req.body.password, userByEmail.password)
-  ) {
-    const token = jwt.sign(
-      {
-        _id: userByEmail._id,
-      },
-      process.env.SECRET,
-      { expiresIn:'1d', }
-    );
-    return res.status(200).json({success:true,Message:"Login Successful",token})
-  }
-  if (userByPhone) {
+  try {
+    const userByEmail = await User.findOne({ email: req.body.email });
+    if (!userByEmail) {
+      return res.status(400).send("Invalid Email or Mobile Number");
+    }
+    if (
+      userByEmail &&
+      bcrypt.compareSync(req.body.password, userByEmail.password)
+    ) {
+      const token = jwt.sign(
+        {
+          _id: userByEmail._id,
+        },
+        process.env.SECRET,
+        { expiresIn: "1d" }
+      );
+      return res
+        .status(200)
+        .json({ success: true, Message: "Login Successful", token });
+    }
+  } catch (err) {
+    console.log(err);
   }
 });
 router.get("/getAll", (req, res) => {
