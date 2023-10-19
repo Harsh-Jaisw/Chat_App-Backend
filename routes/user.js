@@ -64,7 +64,7 @@ router.post("/register", async (req, res) => {
     });
     user = await user.save();
     if (!user) {
-      return res.status(404).send("The user cannot be created");
+      return res.status(404).json({success:false,message:"The user cannot be created"});
     }
     res.status(200).json({ success: true, Data: user });
   } catch (error) {
@@ -75,7 +75,7 @@ router.post("/login", async (req, res) => {
   try {
     const userByEmail = await User.findOne({ email: req.body.email });
     if (!userByEmail) {
-      return res.status(400).send("Invalid Email or Mobile Number");
+      return res.status(400).json({success:false,message:"Invalid Email or Mobile Number"});
     }
     if (
       userByEmail &&
@@ -91,6 +91,9 @@ router.post("/login", async (req, res) => {
       return res
         .status(200)
         .json({ success: true, Message: "Login Successful", token });
+    }
+    else{
+        res.status(405).json({success:false,message:"Invaid Password"})
     }
   } catch (err) {
     console.log(err);
