@@ -18,6 +18,17 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    friends:{
+      type:Array,
+      default:[]
+    },
+    profilePicture:{
+      type:String,
+    },
+    Photos:{
+      type:Array,
+      default:[]
+    },
   },
   {
     timestamps: true,
