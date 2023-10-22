@@ -1,45 +1,7 @@
 const express = require("express");
-const bcrypt = require("bcryptjs");
 const router = express.Router();
 const User = require("../models/user");
-const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-
- function SendMail (user_name, user_email) {
-  let transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "chatapp585@gmail.com",
-      pass: "sfmfgzccqbafvtmj",
-    },
-  });
-
-  let info = {
-    from: '"chatapp585@gmail.com"',
-    to: `${user_email}`,
-    subject: ` Hello,Mr/Mrs : ${user_name}, /n Your Chat App Verification Code`,
-    text: `Hello,Mr/Mrs : ${user_name}, We Are Happy Have You On Board 👌😀`,
-    html: `<body style="font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; padding: 20px;">
-      <div style="background-color: #ffffff; max-width: 600px; margin: auto; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-        <h1 style="color: #333;">Email Verification</h1>
-        <p style="color: #555; font-size: 16px;">Dear ${user_name},</p>
-        <p style="color: #555; font-size: 16px;">Thank you for registering with our platform. To get started, please click the link below to verify your email address:</p>
-        <a href="{verificationLink}" style="display: inline-block; text-decoration: none; background-color: #007bff; color: #ffffff; padding: 10px 20px; font-size: 16px; border-radius: 5px; margin-top: 20px;">Verify Email</a>
-        <p style="color: #555; font-size: 16px; margin-top: 20px;">If the button above doesn't work, you can also copy and paste the following link into your browser:</p>
-        <p style="color: #555; font-size: 16px;"></p>
-        <p style="color: #555; font-size: 16px;">Thank you for using our platform!</p>
-      </div>
-    </body>`,
-  };
-
-  transporter.sendMail(info, (err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log('Email Sent.');
-    }
-  });
-}
 
 router.get("/gitHubJson", (req, res) => {
   res.json([
@@ -91,97 +53,100 @@ router.get("/gitHubJson", (req, res) => {
     },
   ]);
 });
-router.post("/register", async (req, res) => {
-  console.log(req.body);
+
+
+router.get("/getall", async (req, res) => {
   try {
-    let user = new User({
-      name: req.body.name,
-      email: req.body.email,
-      mobileNumber: req.body.mobileNumber,
-      password: bcrypt.hashSync(req.body.password, 10),
-    });
-    SendMail(req.body.name, req.body.email);
-    user = await user.save();
-    SendMail(req.body.name, req.body.email);
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "The user cannot be created" });
-    }
-    res.status(200).json({ success: true, Data: user });
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
-router.post("/login", async (req, res) => {
-  try {
-    const userByEmail = await User.findOne({ email: req.body.email });
-    if (!userByEmail) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid Email or Mobile Number" });
-    }
-    if (
-      userByEmail &&
-      bcrypt.compareSync(req.body.password, userByEmail.password)
-    ) {
-      const token = jwt.sign(
-        {
-          _id: userByEmail._id,
-        },
-        process.env.SECRET,
-        { expiresIn: "1d" }
-      );
-      return res
+    const usersList = await User.find({});
+    if (usersList.length > 0) {
+      res
         .status(200)
-        .json({ success: true, Message: "Login Successful", token });
-    } else {
-      res.status(405).json({ success: false, message: "Invaid Password" });
+        .json({ success: true, message: "Data of users", data: usersList });
     }
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    res.status(400).json({ success: false, message: error });
   }
 });
-router.get("/getAll", (req, res) => {
-  res.send("Get All Api");
+
+router.get("/users/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
-router.get("/getOne:id", (req, res) => {
-  res.send(req.params.id);
-});
-router.patch("/update:id", (req, res) => {
-  res.send("update by Id API");
+
+//update user
+router.put("/:id", async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.params.id, {
+      $set: req.body,
+    });
+    res.status(200).json("Account has been updated");
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+  return res.status(403).json("You can update only your account!");
 });
 router.delete("/delete:id", (req, res) => {
   res.send("Delete by Id API");
 });
 
-router.get("/otp", async (req, res) => {
-  let testAccount = await nodemailer.createTestAccount();
-
-  let transporter = await nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "chatapp585@gmail.com",
-      pass: "sfmfgzccqbafvtmj",
-    },
-  });
-
-  let info = {
-    from: '"chatapp585@gmail.com"',
-    to: "bhavishm009@gmail.com",
-    subject: "Message",
-    text: "I hope this message gets delivered!",
-    html: "<b>Hello world?</b>",
-  };
-
-  transporter.sendMail(info, (err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(info);
+router.get("/verifyaccount/:id/:otp", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    const { otp } = req.params;
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-  });
-  console.log("Message sent: %s", info.messageId);
-  res.json(info);
+    console.log(typeof user.verificationCode, user);
+    if (user.verificationCode === null) {
+      return res
+        .status(200)
+        .json({ message: "Your account is already verified" });
+    }
+    if (user.verificationCode === otp) {
+      user.isVerfied = true;
+      user.verificationCode = undefined;
+      await user.save();
+      return res.status(200).render('');
+    } else {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
 });
+
+// router.get('/otp',(req,res) => {
+//   let testAccount = await nodemailer.createTestAccount();
+
+//   let transporter = await nodemailer.createTransport({
+//     service: "gmail",
+//     auth: {
+//       user: "chatapp585@gmail.com",
+//       pass: "sfmfgzccqbafvtmj",
+//     },
+//   });
+
+//   let info = {
+//     from: '"chatapp585@gmail.com"',
+//     to: "bhavishm009@gmail.com",
+//     subject: "Message",
+//     text: "I hope this message gets delivered!",
+//     html: "<b>Hello world?</b>",
+//   };
+
+//   transporter.sendMail(info, (err) => {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       console.log(info);
+//     }
+//   });
+//   console.log("Message sent: %s", info.messageId);
+//   res.json(info);
+// })
 module.exports = router;
