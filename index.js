@@ -3,7 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const routes = require("./routes/user");
 const cors = require("cors");
-const mongoString = process.env.DATABASE_URL;
+const mongoString = process.env.NODE_ENV==="development"?"mongodb://localhost:27017":process.env.DATABASE_URL;
 
 mongoose
   .connect(mongoString)
