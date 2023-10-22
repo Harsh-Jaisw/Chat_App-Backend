@@ -5,10 +5,8 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
-async function SendMail(user_name, user_email) {
-  console.log("email........", user_email);
-  let testAccount = await nodemailer.createTestAccount();
-  let transporter = await nodemailer.createTransport({
+ function SendMail (user_name, user_email) {
+  let transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
       user: "chatapp585@gmail.com",
@@ -36,9 +34,9 @@ async function SendMail(user_name, user_email) {
 
   transporter.sendMail(info, (err) => {
     if (err) {
-      return;
+      console.log(err);
     } else {
-      return;
+      console.log('Email Sent.');
     }
   });
 }
@@ -104,6 +102,7 @@ router.post("/register", async (req, res) => {
     });
     SendMail(req.body.name, req.body.email);
     user = await user.save();
+    SendMail(req.body.name, req.body.email);
     if (!user) {
       return res
         .status(404)
