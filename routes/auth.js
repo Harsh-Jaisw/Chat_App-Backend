@@ -5,7 +5,7 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
-function SendMail(user_name, user_email, verificationCode,user_id) {
+function SendMail(user_name, user_email, verificationCode, user_id) {
   let transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -72,6 +72,7 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
+  console.log("hello");
   function generateRandomNumber() {
     return Math.floor(Math.random() * 900000) + 100000;
   }
@@ -85,7 +86,7 @@ router.post("/register", async (req, res) => {
       verificationCode: verificationCode,
     });
     console.log(user._id);
-    SendMail(req.body.name, req.body.email, verificationCode,user._id);
+    SendMail(req.body.name, req.body.email, verificationCode, user._id);
     user = await user.save();
     if (!user) {
       return res
@@ -94,11 +95,43 @@ router.post("/register", async (req, res) => {
     }
     res
       .status(200)
-      .json({ success: true, message: "Registration Successful.",user_id:user._id });
+      .json({
+        success: true,
+        message: "Registration Successful.",
+        user_id: user._id,
+      });
   } catch (error) {
     res.status(400).send(error);
   }
 });
 
+router.get("/verifyaccount/:id/:otp", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    const { otp } = req.params;
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log(typeof user.verificationCode, user);
+    if (user.verificationCode === null) {
+      return res
+        .status(200)
+        .json({ success: false, message: "Your account is already verified" });
+    }
+    if (user.verificationCode === otp) {
+      user.isVerfied = true;
+      user.verificationCode = undefined;
+      await user.save();
+      return res.status(200).json({ success: true, message: "Your account is already verified" });
+    } else {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
+  }
+});
 
 module.exports = router;

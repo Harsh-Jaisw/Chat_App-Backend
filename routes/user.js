@@ -93,32 +93,32 @@ router.delete("/delete:id", (req, res) => {
   res.send("Delete by Id API");
 });
 
-router.get("/verifyaccount/:id/:otp", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    const { otp } = req.params;
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    console.log(typeof user.verificationCode, user);
-    if (user.verificationCode === null) {
-      return res
-        .status(200)
-        .json({ message: "Your account is already verified" });
-    }
-    if (user.verificationCode === otp) {
-      user.isVerfied = true;
-      user.verificationCode = undefined;
-      await user.save();
-      return res.status(200).render('');
-    } else {
-      return res.status(400).json({ message: "Invalid OTP" });
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal Server Error" });
-  }
-});
+// router.get("/verifyaccount/:id/:otp", async (req, res) => {
+//   try {
+//     const user = await User.findById(req.params.id);
+//     const { otp } = req.params;
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+//     console.log(typeof user.verificationCode, user);
+//     if (user.verificationCode === null) {
+//       return res
+//         .status(200)
+//         .json({ message: "Your account is already verified" });
+//     }
+//     if (user.verificationCode === otp) {
+//       user.isVerfied = true;
+//       user.verificationCode = undefined;
+//       await user.save();
+//       return res.status(200).render('');
+//     } else {
+//       return res.status(400).json({ message: "Invalid OTP" });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "Internal Server Error" });
+//   }
+// });
 
 // router.get('/otp',(req,res) => {
 //   let testAccount = await nodemailer.createTestAccount();
