@@ -32,9 +32,10 @@ mongoose
   .catch((err) => console.log(err));
 
 
+  
 //Routes
 app.use("/api", userRoutes);
-app.use('/api/auth',authRoutes);
+app.use('/api',authRoutes);
 // app.use('/api/post',postRoutes);
 
 //Server Setup
