@@ -7,13 +7,16 @@ const cors = require("cors");
 const app = express();
 
 //Importing Routes Here
+
 const userRoutes = require("./routes/user");
 const authRoutes = require('./routes/auth');
-const postRoutes = require('./routes/post')
+const postRoutes = require('./routes/post');
+
 
 
 
 //Middleware's Here
+app.use('/public/uploads', express.static('public/uploads'));
 app.use(cors());
 app.use(express.json());
 
@@ -32,11 +35,11 @@ mongoose
   .catch((err) => console.log(err));
 
 
-  
 //Routes
 app.use("/api", userRoutes);
 app.use('/api',authRoutes);
-// app.use('/api/post',postRoutes);
+app.use('/api/posts',postRoutes);
+
 
 //Server Setup
 app.listen(process.env.PORT, () => {

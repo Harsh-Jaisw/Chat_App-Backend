@@ -1,17 +1,109 @@
 const router = require("express").Router();
 const Post = require("../models/post");
 const User = require("../models/user");
+const multer = require("multer");
+const fs = require("fs");
 
-//create a post
-router.post("/", async (req, res) => {
-  const newPost = new Post(req.body);
+const FILE_TYPE_MAP = {
+  "image/png": "png",
+  "image/jpeg": "jpeg",
+  "image/jpg": "jpg",
+};
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    console.log("Hello");
+    const isValid = FILE_TYPE_MAP[file.mimetype];
+    let uploadError = new Error("Invalid image type");
+    if (isValid) {
+      uploadError = null;
+    }
+    cb(uploadError, "public/uploads");
+  },
+  filename: (req, file, cb) => {
+    console.log("help");
+    const fileName = file.originalname.toLowerCase().split(" ").join("-");
+    const extension = FILE_TYPE_MAP[file.mimetype];
+    cb(null, `${fileName}-${Date.now()}.${extension}`);
+  },
+});
+
+const uploadOptions = multer({ storage: storage });
+
+router.post("/", uploadOptions.single("image"), async (req, res) => {
+  console.log(req.body);
+  const { description } = req.body;
+
+  const fileName = req.file.filename;
+  const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+
+  if (!description) {
+    // If description is missing, send a 400 Bad Request response
+    return res.status(400).json({
+      message: "Description is required",
+      success: false,
+    });
+  }
+
+  const imagePath = `${basePath}${fileName}`;
+
+  let post = new Post({
+    createdBy: "65369726545eea2a86922a85",
+    image: imagePath,
+    description: description,
+  });
+
   try {
-    const savedPost = await newPost.save();
-    res.status(200).json(savedPost);
-  } catch (err) {
-    res.status(500).json(err);
+    post = await post.save();
+    console.log(post);
+    res.status(200).json({
+      Data: post,
+      Success: true,
+      message: "Post created successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({ Success: false, message: "Post cannot be created" });
   }
 });
+
+
+
+// router.post("/", uploadOptions.single("image"), async (req, res) => {
+//   console.log(req.body);
+//   const { description, image } = req.body;
+
+//   const fileName = req.file.filename;
+//   const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+
+//   if (!description || !image) {
+//     return res
+//       .status(400)
+//       .json({
+//         message: "Both description and image are required",
+//         success: false,
+//       });
+//   }
+
+//   let post = new Post({
+//     createdBy: "65369726545eea2a86922a85",
+//     image: `${basePath}${fileName}`,
+//     description:description,
+//   });
+
+//   try {
+//     post = await post.save();
+//     console.log(post);
+//     res.status(200).json({
+//       Data: post,
+//       Success: true,
+//       message: "Post created successfully",
+//     });
+//   } catch (error) {
+//     return res
+//       .status(500)
+//       .json({ Success: false, message: "Post cannot be created" });
+//   }
+// });
 
 //update a post
 router.put("/:id", async (req, res) => {
@@ -90,6 +182,15 @@ router.get("/profile/:username", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.username });
     const posts = await Post.find({ userId: user._id });
+    res.status(200).json(posts);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ createdAt: -1 });
     res.status(200).json(posts);
   } catch (err) {
     res.status(500).json(err);
