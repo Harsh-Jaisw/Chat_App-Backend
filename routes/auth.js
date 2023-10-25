@@ -93,13 +93,11 @@ router.post("/register", async (req, res) => {
         .status(404)
         .json({ success: false, message: "The user cannot be created" });
     }
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Registration Successful.",
-        user_id: user._id,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Registration Successful.",
+      user_id: user._id,
+    });
   } catch (error) {
     res.status(400).send(error);
   }
@@ -122,7 +120,9 @@ router.get("/verifyaccount/:id/:otp", async (req, res) => {
       user.isVerfied = true;
       user.verificationCode = undefined;
       await user.save();
-      return res.status(200).json({ success: true, message: "Your account is already verified" });
+      return res
+        .status(200)
+        .json({ success: true, message: "Your account is already verified" });
     } else {
       return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
