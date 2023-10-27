@@ -30,15 +30,21 @@ const mongoString =
 
 //Connecting to Database Here
 mongoose
-  .connect(mongoString)
-  .then((res) => console.log("Database Connected"))
+  .connect(mongoString, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    family: 4,
+  })
+  .then(async () => {
+    console.log("Database Connected");
+  })
   .catch((err) => console.log(err));
 
 
 //Routes
 app.use("/api", userRoutes);
 app.use('/api',authRoutes);
-app.use('/api/posts',postRoutes);
+app.use('/api',postRoutes);
 
 
 //Server Setup
