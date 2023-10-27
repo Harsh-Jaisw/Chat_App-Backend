@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
 
 const uploadOptions = multer({ storage: storage });
 
-router.post("/", uploadOptions.single("image"), async (req, res) => {
+router.post("/posts", uploadOptions.single("image"), async (req, res) => {
   console.log(req.body);
   const { description } = req.body;
 
@@ -62,6 +62,7 @@ router.post("/", uploadOptions.single("image"), async (req, res) => {
       message: "Post created successfully",
     });
   } catch (error) {
+    console.log("err",error)
     return res.status(500).json({ Success: false, message: "Post cannot be created" });
   }
 });
