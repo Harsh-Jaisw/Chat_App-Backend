@@ -54,7 +54,6 @@ router.get("/gitHubJson", (req, res) => {
   ]);
 });
 
-
 router.get("/getall", async (req, res) => {
   try {
     const usersList = await User.find({});

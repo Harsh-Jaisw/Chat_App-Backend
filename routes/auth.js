@@ -49,30 +49,44 @@ router.post("/login", async (req, res) => {
         .status(400)
         .json({ success: false, message: "Invalid Email or Mobile Number" });
     }
-    if (
-      userByEmail &&
-      bcrypt.compareSync(req.body.password, userByEmail.password)
-    ) {
-      const token = jwt.sign(
-        {
-          _id: userByEmail._id,
-        },
-        process.env.SECRET,
-        { expiresIn: "1d" }
-      );
+
+    if (!bcrypt.compareSync(req.body.password, userByEmail.password)) {
       return res
-        .status(200)
-        .json({ success: true, Message: "Login Successful", token });
-    } else {
-      res.status(405).json({ success: false, message: "Invaid Password" });
+        .status(400)
+        .json({ success: false, message: "Invalid Password" });
     }
+
+    const token = jwt.sign(
+      {
+        _id: userByEmail._id,
+      },
+      process.env.SECRET,
+      { expiresIn: "1d" }
+    );
+
+    return res
+      .status(200)
+      .json({ success: true, Message: "Login Successful", token });
   } catch (err) {
     console.log(err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 });
 
 router.post("/register", async (req, res) => {
-  console.log("hello");
+  if (
+    !req.body.email ||
+    !req.body.name ||
+    !req.body.mobileNumber ||
+    !req.body.password
+  ) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Please fill all the fields" });
+  }
+
   function generateRandomNumber() {
     return Math.floor(Math.random() * 900000) + 100000;
   }
