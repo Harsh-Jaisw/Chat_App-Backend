@@ -23,22 +23,16 @@ app.use(express.json());
 
 
 
-const mongoString =
-  process.env.NODE_ENV === "development"
-    ? "mongodb://localhost:27017/ChatApp"
-    : process.env.DATABASE_URL;
+const mongodbURI = process.env.MONGODB_URI || 'mongodb://harshJaiswal:Harsh18719@cluster0.ip4h7xa.mongodb.net/?retryWrites=true&w=majority';
+const port = process.env.PORT || 3000;
 
 //Connecting to Database Here
-mongoose
-  .connect(mongoString, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    family: 4,
-  })
-  .then(async () => {
-    console.log("Database Connected");
-  })
-  .catch((err) => console.log(err));
+mongoose.connect(mongodbURI,{
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(async () => {console.log("Database Connected")})
+.catch((err) => console.log(err));
 
 
 //Routes
@@ -48,6 +42,6 @@ app.use('/api',postRoutes);
 
 
 //Server Setup
-app.listen(process.env.PORT, () => {
-  console.log(`Server is Listening on port:${process.env.PORT}`);
+app.listen(port, () => {
+  console.log(`Server is Listening on port:${port}`);
 });

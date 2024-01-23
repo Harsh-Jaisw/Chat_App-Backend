@@ -48,7 +48,7 @@ router.post("/posts", uploadOptions.single("image"), async (req, res) => {
   const imagePath = `${basePath}${fileName}`;
 
   let post = new Post({
-    createdBy: "65369726545eea2a86922a85",
+    createdBy: "65affba216599dffd82b07f1",
     image: imagePath,
     description: description,
   });
