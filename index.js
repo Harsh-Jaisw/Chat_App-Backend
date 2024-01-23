@@ -23,7 +23,7 @@ app.use(express.json());
 
 
 
-const mongodbURI = process.env.MONGODB_URI || 'mongodb://harshJaiswal:Harsh18719@cluster0.ip4h7xa.mongodb.net/?retryWrites=true&w=majority';
+const mongodbURI = process.env.MONGODB_URI || 'mongodb+srv://bhavish:rkJhPN8jxLC0eAFW@cluster0.whnz6zb.mongodb.net/?retryWrites=true&w=majority';
 const port = process.env.PORT || 3000;
 
 //Connecting to Database Here
